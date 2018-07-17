@@ -234,6 +234,8 @@ static void *create_fdt(NexellSwallowState *s, const struct MemmapEntry *memmap,
     return fdt;
 }
 
+#define NAME_SIZE 20
+
 static void nexell_swallow_board_init(MachineState *machine)
 {
     const struct MemmapEntry *memmap = nexell_swallow_memmap;
@@ -245,6 +247,7 @@ static void nexell_swallow_board_init(MachineState *machine)
     char *plic_hart_config;
     size_t plic_hart_config_len;
     int i;
+    char name[NAME_SIZE];
 
     const char *dtb_filename = machine->dtb;
 
@@ -360,6 +363,31 @@ static void nexell_swallow_board_init(MachineState *machine)
     serial_mm_init(system_memory, memmap[NEXELL_SWALLOW_UART0].base,
         0, NEXELL_PLIC(s->plic)->irqs[UART0_IRQ], 399193,
         serial_hds[0], DEVICE_LITTLE_ENDIAN);
+
+    /* GPIO */
+    for (i = 0; i < SWALLOW_NUM_GPIOS; i++) {
+	    static const hwaddr SWALLOW_GPIOn_ADDR[SWALLOW_NUM_GPIOS] = {
+		    SWALLOW_GPIO0_ADDR,
+		    SWALLOW_GPIO1_ADDR,
+		    SWALLOW_GPIO2_ADDR,
+		    SWALLOW_GPIO3_ADDR,
+		    SWALLOW_GPIO4_ADDR,
+		    SWALLOW_GPIO5_ADDR,
+		    SWALLOW_GPIO6_ADDR,
+		    SWALLOW_GPIO7_ADDR,
+	    };
+
+	    object_initialize(&s->gpio[i], sizeof(s->gpio[i]),
+			      TYPE_NXP3220_GPIO);
+	    qdev_set_parent_bus(DEVICE(&s->gpio[i]), sysbus_get_default());
+	    snprintf(name, NAME_SIZE, "gpio%d", i);
+	    object_property_add_child(OBJECT(machine), name,
+				      OBJECT(&s->gpio[i]), &error_fatal);
+	    object_property_set_bool(OBJECT(&s->gpio[i]), true, "realized",
+				     &error_abort);
+	    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio[i]), 0,
+			    SWALLOW_GPIOn_ADDR[i]);
+    }
 }
 
 static void nexell_swallow_board_machine_init(MachineClass *mc)

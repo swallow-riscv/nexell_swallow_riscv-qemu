@@ -19,9 +19,26 @@
 #ifndef HW_NEXELL_SWALLOW_H
 #define HW_NEXELL_SWALLOW_H
 
+#include "hw/gpio/nxp3220_gpio.h"
+
 #define TYPE_NEXELL_SWALLOW_BOARD "riscv.nexell_swallow"
 #define NEXELL_SWALLOW(obj) \
     OBJECT_CHECK(NexellSwallowState, (obj), TYPE_NEXELL_SWALLOW_BOARD)
+
+enum SwallowConfiguration {
+	SWALLOW_NUM_GPIOS = 8,
+};
+
+enum SwallowMemoryMap {
+	SWALLOW_GPIO0_ADDR = 0x20700000,
+	SWALLOW_GPIO1_ADDR = 0x20710000,
+	SWALLOW_GPIO2_ADDR = 0x20720000,
+	SWALLOW_GPIO3_ADDR = 0x20730000,
+	SWALLOW_GPIO4_ADDR = 0x20740000,
+	SWALLOW_GPIO5_ADDR = 0x20750000,
+	SWALLOW_GPIO6_ADDR = 0x20760000,
+	SWALLOW_GPIO7_ADDR = 0x20770000,
+};
 
 typedef struct {
     /*< private >*/
@@ -32,6 +49,8 @@ typedef struct {
     DeviceState *plic;
     void *fdt;
     int fdt_size;
+
+    NXP3220GpioState gpio[SWALLOW_NUM_GPIOS];
 } NexellSwallowState;
 
 enum {
