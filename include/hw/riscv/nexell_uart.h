@@ -1,71 +1,134 @@
 /*
- * Nexell UART interface
+ * QEMU Designware UART emulation
  *
- * Copyright (c) 2016 Stefan O'Rear
- * Copyright (c) 2017 Nexell, Inc.
+ * Copyright (c) 2018 Nexell, Inc.
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2 or later, as published by the Free Software Foundation.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
-#ifndef HW_NEXELL_UART_H
-#define HW_NEXELL_UART_H
+#ifndef NEXELL_UART_H
+#define NEXELL_UART_H
 
-enum {
-    NEXELL_UART_TXFIFO        = 0,
-    NEXELL_UART_RXFIFO        = 4,
-    NEXELL_UART_TXCTRL        = 8,
-    NEXELL_UART_TXMARK        = 10,
-    NEXELL_UART_RXCTRL        = 12,
-    NEXELL_UART_RXMARK        = 14,
-    NEXELL_UART_IE            = 16,
-    NEXELL_UART_IP            = 20,
-    NEXELL_UART_DIV           = 24,
-    NEXELL_UART_MAX           = 32
-};
+#include "hw/hw.h"
+#include "sysemu/sysemu.h"
+#include "chardev/char-fe.h"
+#include "exec/memory.h"
+#include "qemu/fifo8.h"
+#include "chardev/char.h"
 
-enum {
-    NEXELL_UART_IE_TXWM       = 1, /* Transmit watermark interrupt enable */
-    NEXELL_UART_IE_RXWM       = 2  /* Receive watermark interrupt enable */
-};
-
-enum {
-    NEXELL_UART_IP_TXWM       = 1, /* Transmit watermark interrupt pending */
-    NEXELL_UART_IP_RXWM       = 2  /* Receive watermark interrupt pending */
-};
-
-#define TYPE_NEXELL_UART "riscv.nexell.uart"
-
-#define NEXELL_UART(obj) \
-    OBJECT_CHECK(NexellUARTState, (obj), TYPE_NEXELL_UART)
+#define UART_FIFO_LENGTH    16      /* Designware Fifo Length */
 
 typedef struct NexellUARTState {
-    /*< private >*/
-    SysBusDevice parent_obj;
+    uint16_t divider;
 
-    /*< public >*/
+    /* need to check register size */
+    uint8_t rbr; /* receive register */
+    /* need to check register size */
+    uint8_t thr; /* transmit holding register */
+    uint8_t dll; /* */
+    uint8_t tsr; /* */
+    uint8_t ier; /* */
+    uint8_t dlh; /* */
+    uint8_t iir; /* */
+    uint8_t fcr; /* */
+    uint8_t lcr;
+    uint8_t mcr;
+    /* need to check register size */
+    uint8_t lsr; /* read only */
+    uint8_t msr; /* read only */
+    uint8_t scr;
+    uint8_t lpdll;
+    uint8_t lpdlh;
+    uint32_t srbr[16];
+    uint32_t sthr[16];
+    uint8_t far;
+    uint8_t tfr;
+    uint32_t rfw;
+    uint8_t usr;
+    uint32_t tfl;
+    uint32_t rfl;
+    uint8_t srr;
+    uint8_t srts;
+    uint8_t sbcb;
+    uint8_t sdmam;
+    uint8_t sfe;
+    uint8_t srt;
+    uint8_t stet;
+    uint8_t htx;
+    uint8_t dmasa;
+    uint8_t tcr;
+    uint8_t doer;
+    uint8_t roer;
+    uint32_t doetr;
+    uint32_t tatr;
+    uint8_t dlf;
+    uint8_t rar;
+    uint8_t tar;
+    uint8_t lecr;
+    uint32_t cpr;
+    uint32_t ucv;
+    uint32_t ctr;
+
+    uint8_t fcr_vmstate; /* we can't write directly this value
+                            it has side effects */
+    /* NOTE: this hidden state is necessary for tx irq generation as
+       it can be reset while reading iir */
+    int thr_ipending;
     qemu_irq irq;
-    MemoryRegion mmio;
     CharBackend chr;
-    uint8_t rx_fifo[8];
-    unsigned int rx_fifo_len;
-    uint32_t ie;
-    uint32_t ip;
-    uint32_t txctrl;
-    uint32_t rxctrl;
-    uint32_t div;
+    int last_break_enable;
+    int it_shift;
+    int baudbase;
+    uint32_t tsr_retry;
+    guint watch_tag;
+    uint32_t wakeup;
+
+    /* Time when the last byte was successfully sent out of the tsr */
+    uint64_t last_xmit_ts;
+    Fifo8 recv_fifo;
+    Fifo8 xmit_fifo;
+    /* Interrupt trigger level for recv_fifo */
+    uint8_t recv_fifo_itl;
+
+    QEMUTimer *fifo_timeout_timer;
+    int timeout_ipending;           /* timeout interrupt pending state */
+
+    uint64_t char_transmit_time;    /* time to transmit a char in ticks */
+    int poll_msl;
+
+    QEMUTimer *modem_status_poll;
+    MemoryRegion io;
 } NexellUARTState;
 
-NexellUARTState *nexell_uart_create(MemoryRegion *address_space, hwaddr base,
-    Chardev *chr, qemu_irq irq);
+extern const VMStateDescription vmstate_nexell_uart;
+extern const MemoryRegionOps nexell_uart_io_ops;
+
+void nexell_uart_realize_core(NexellUARTState *s, Error **errp);
+void nexell_uart_exit_core(NexellUARTState *s);
+void nexell_uart_set_frequency(NexellUARTState *s, uint32_t frequency);
+
+/* legacy pre qom */
+NexellUARTState *nexell_uart_init(int base, qemu_irq irq, int baudbase,
+                         Chardev *chr, MemoryRegion *system_io);
+NexellUARTState *nexell_uart_mm_init(MemoryRegion *address_space,
+                            hwaddr base, int it_shift,
+                            qemu_irq irq, int baudbase,
+                            Chardev *chr, enum device_endian end);
 
 #endif
