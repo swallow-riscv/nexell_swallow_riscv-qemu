@@ -34,6 +34,7 @@
 #include "hw/riscv/nexell_clint.h"
 #include "hw/misc/nexell_scaler.h"
 #include "hw/riscv/nexell_uart.h"
+#include "hw/adc/nexell_adc.h"
 #include "hw/riscv/nexell_swallow.h"
 #include "chardev/char.h"
 #include "sysemu/arch_init.h"
@@ -51,6 +52,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
     [NEXELL_SWALLOW_SCALER] =   { 0x20410000,     0x1000 },
     [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
+    [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,	 0x10000 },
     [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
     [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
 };
@@ -391,6 +393,14 @@ static void nexell_swallow_board_init(MachineState *machine)
 	nexell_scaler_create(system_memory,
 			memmap[NEXELL_SWALLOW_SCALER].base,
 			NEXELL_PLIC(s->plic)->irqs[SCALER_IRQ]);
+
+	/* ADC0 */
+	object_initialize(&s->adc0, sizeof(s->adc0), TYPE_NEXELL_ADC);
+	s->adc0.irq = NEXELL_PLIC(s->plic)->irqs[ADC0_IRQ];
+	object_property_set_bool(OBJECT(&s->adc0), true, "realized",
+			&error_abort);
+	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_ADC0].base,
+			&s->adc0.mmio);
 }
 
 static void nexell_swallow_board_machine_init(MachineClass *mc)
