@@ -35,6 +35,7 @@
 #include "hw/misc/nexell_scaler.h"
 #include "hw/riscv/nexell_uart.h"
 #include "hw/adc/nexell_adc.h"
+#include "hw/timer/nexell_pwm.h"
 #include "hw/riscv/nexell_swallow.h"
 #include "chardev/char.h"
 #include "sysemu/arch_init.h"
@@ -52,6 +53,9 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
     [NEXELL_SWALLOW_SCALER] =   { 0x20410000,     0x1000 },
     [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
+    [NEXELL_SWALLOW_PWM0] =     { 0x208f0000,	 0x10000 },
+    [NEXELL_SWALLOW_PWM1] =     { 0x20900000,	 0x10000 },
+    [NEXELL_SWALLOW_PWM2] =     { 0x208e0000,	 0x10000 },
     [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,	 0x10000 },
     [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
     [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
@@ -401,6 +405,25 @@ static void nexell_swallow_board_init(MachineState *machine)
 			&error_abort);
 	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_ADC0].base,
 			&s->adc0.mmio);
+
+	/* PWM0 */
+	object_initialize(&s->pwm0, sizeof(s->pwm0), TYPE_NEXELL_PWM);
+	object_property_set_bool(OBJECT(&s->pwm0), true, "realized",
+			&error_abort);
+	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_PWM0].base,
+			&s->pwm0.iomem);
+	/* PWM1 */
+	object_initialize(&s->pwm1, sizeof(s->pwm1), TYPE_NEXELL_PWM);
+	object_property_set_bool(OBJECT(&s->pwm1), true, "realized",
+			&error_abort);
+	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_PWM1].base,
+			&s->pwm1.iomem);
+	/* PWM2 */
+	object_initialize(&s->pwm2, sizeof(s->pwm2), TYPE_NEXELL_PWM);
+	object_property_set_bool(OBJECT(&s->pwm2), true, "realized",
+			&error_abort);
+	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_PWM2].base,
+			&s->pwm2.iomem);
 }
 
 static void nexell_swallow_board_machine_init(MachineClass *mc)

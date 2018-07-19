@@ -48,6 +48,9 @@ typedef struct {
     RISCVHartArrayState soc;
     DeviceState *plic;
     NEXELLADCState adc0;
+    NexellPWMState pwm0;
+    NexellPWMState pwm1;
+    NexellPWMState pwm2;
     void *fdt;
     int fdt_size;
 
@@ -63,6 +66,9 @@ enum {
     NEXELL_SWALLOW_ADC0,
     NEXELL_SWALLOW_SCALER,
     NEXELL_SWALLOW_UART0,
+    NEXELL_SWALLOW_PWM0,
+    NEXELL_SWALLOW_PWM1,
+    NEXELL_SWALLOW_PWM2,
     NEXELL_SWALLOW_UART1,
     NEXELL_SWALLOW_UART2,
     NEXELL_SWALLOW_UART3,
@@ -81,6 +87,9 @@ enum {
     UART4_IRQ = 60,
     UART5_IRQ = 61,
     ADC0_IRQ = 46,
+    PWM0_IRQ_INT0 = 62,
+    PWM1_IRQ_INT0 = 66,
+    PWM2_IRQ_INT0 = 70,
     IRQ_NDEV = 89,
 };
 
