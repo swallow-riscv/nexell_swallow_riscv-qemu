@@ -32,6 +32,7 @@
 #include "hw/riscv/riscv_hart.h"
 #include "hw/riscv/nexell_plic.h"
 #include "hw/riscv/nexell_clint.h"
+#include "hw/misc/nexell_scaler.h"
 #include "hw/riscv/nexell_uart.h"
 #include "hw/riscv/nexell_swallow.h"
 #include "chardev/char.h"
@@ -48,6 +49,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_MROM] =     {    0x1000,     0x10000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
+    [NEXELL_SWALLOW_SCALER] =   { 0x20410000,     0x1000 },
     [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
     [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
     [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
@@ -385,6 +387,10 @@ static void nexell_swallow_board_init(MachineState *machine)
 	    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio[i]), 0,
 			    SWALLOW_GPIOn_ADDR[i]);
     }
+    /* SCALER */
+	nexell_scaler_create(system_memory,
+			memmap[NEXELL_SWALLOW_SCALER].base,
+			NEXELL_PLIC(s->plic)->irqs[SCALER_IRQ]);
 }
 
 static void nexell_swallow_board_machine_init(MachineClass *mc)
