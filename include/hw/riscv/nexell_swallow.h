@@ -1,7 +1,7 @@
 /*
  * QEMU RISC-V Nexell Swallow machine interface
  *
- * Copyright (c) 2017 SiFive, Inc.
+ * Copyright (c) 2018 Nexell, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -60,12 +60,22 @@ enum {
     NEXELL_SWALLOW_CLINT,
     NEXELL_SWALLOW_PLIC,
     NEXELL_SWALLOW_UART0,
+    NEXELL_SWALLOW_UART1,
+    NEXELL_SWALLOW_UART2,
+    NEXELL_SWALLOW_UART3,
+    NEXELL_SWALLOW_UART4,
+    NEXELL_SWALLOW_UART5,
     NEXELL_SWALLOW_SRAM,
     NEXELL_SWALLOW_DRAM
 };
 
 enum {
-    UART0_IRQ = 58,
+    UART0_IRQ = 56,
+    UART1_IRQ = 57,
+    UART2_IRQ = 58,
+    UART3_IRQ = 59,
+    UART4_IRQ = 60,
+    UART5_IRQ = 61,
     IRQ_NDEV = 89,
 };
 

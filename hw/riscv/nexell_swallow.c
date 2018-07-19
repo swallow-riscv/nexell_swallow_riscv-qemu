@@ -48,7 +48,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_MROM] =     {    0x1000,     0x10000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
-    [NEXELL_SWALLOW_UART0] =    { 0x208A0000,     0x1000 },
+    [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
     [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
     [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
 };
@@ -357,10 +357,7 @@ static void nexell_swallow_board_init(MachineState *machine)
         NEXELL_SIP_BASE, NEXELL_TIMECMP_BASE, NEXELL_TIME_BASE);
 
     /* for snsp,dw-apb-uart */
-    //nexell_uart_create(system_memory, memmap[NEXELL_SWALLOW_UART0].base,
-    //    serial_hds[0], NEXELL_PLIC(s->plic)->irqs[UART0_IRQ]);
-    /* for n16550a */
-    serial_mm_init(system_memory, memmap[NEXELL_SWALLOW_UART0].base,
+    nexell_uart_mm_init(system_memory, memmap[NEXELL_SWALLOW_UART0].base,
         0, NEXELL_PLIC(s->plic)->irqs[UART0_IRQ], 399193,
         serial_hds[0], DEVICE_LITTLE_ENDIAN);
 
