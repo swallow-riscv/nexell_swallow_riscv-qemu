@@ -218,7 +218,7 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 		qemu_log("[%s] scaler %s\n", __func__, (val) ? "run":"stop");
 		if (val) {
 			uint32_t *cmd_buf = s->regs.cmdbufaddr;
-			dma_addr_t dst_addr = NULL, src_addr = NULL;
+			dma_addr_t dst_addr = (dma_addr_t)NULL, src_addr = (dma_addr_t)NULL;
 			int src_size, dst_size, src_stride, dst_stride;
 			uint32_t buf[CMD_DST_SIZE+1];
 			/*uint8_t *src_buf = NULL;*/
