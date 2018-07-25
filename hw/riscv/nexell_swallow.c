@@ -51,7 +51,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_MROM] =     {    0x1000,     0x10000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
-    [NEXELL_SWALLOW_SCALER] =   { 0x20410000,     0x1000 },
+    [NEXELL_SWALLOW_SCALER] =   { 0x20410000,    0x10000 },
     [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
     [NEXELL_SWALLOW_PWM0] =     { 0x208f0000,	 0x10000 },
     [NEXELL_SWALLOW_PWM1] =     { 0x20900000,	 0x10000 },
@@ -393,9 +393,10 @@ static void nexell_swallow_board_init(MachineState *machine)
 	    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio[i]), 0,
 			    SWALLOW_GPIOn_ADDR[i]);
     }
-    /* SCALER */
+	/* SCALER */
 	nexell_scaler_create(system_memory,
 			memmap[NEXELL_SWALLOW_SCALER].base,
+			memmap[NEXELL_SWALLOW_SCALER].size,
 			NEXELL_PLIC(s->plic)->irqs[SCALER_IRQ]);
 
 	/* ADC0 */
