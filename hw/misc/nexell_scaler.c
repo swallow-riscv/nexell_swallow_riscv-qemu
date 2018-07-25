@@ -235,6 +235,7 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 					(void*)src_addr, src_stride, src_size);
 			qemu_log("[Scaling] dst - addr:%p, stride:%d, size:%d\n",
 					(void*)dst_addr, dst_stride, dst_size);
+			qemu_irq_raise(s->irq);
 			/*src_buf = g_malloc(1280);
 			if (src_buf == NULL) {
 				qemu_log("[Scaling] Failed to alloc buf for src\n");
@@ -255,8 +256,8 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 			}
 			if (src_buf)
 				g_free(src_buf);
-			*/
 			qemu_log("[Scaling] free buf\n");
+			*/
 		}
 		s->regs.cmdbufcon = val;
 	}
@@ -299,7 +300,7 @@ static const MemoryRegionOps scaler_ops = {
 * Create Scaler device.
 */
 NexellScalerState *nexell_scaler_create(MemoryRegion *address_space, hwaddr base,
-		qemu_irq irq)
+		int size, qemu_irq irq)
 {
 	NexellScalerState *s = g_malloc(sizeof(NexellScalerState));
 
@@ -307,7 +308,7 @@ NexellScalerState *nexell_scaler_create(MemoryRegion *address_space, hwaddr base
 	s->irq = irq;
 	memset((void*)&s->regs, 0x0, sizeof(struct nexell_scaler_register));
 	memory_region_init_io(&s->mmio, NULL, &scaler_ops, s,
-				TYPE_NEXELL_SCALER, NEXELL_SCALER_MAX);
+				TYPE_NEXELL_SCALER, size);
 	memory_region_add_subregion(address_space, s->base_addr, &s->mmio);
 	qemu_log("[%s] hwaddr base:0x%4x\n", __func__, (int)s->base_addr);
 	return s;

@@ -19,7 +19,6 @@
 #ifndef HW_NEXELL_SCALER_H
 #define HW_NEXELL_SCALER_H
 
-#define NEXELL_SCALER_MAX 0x1000
 #define TYPE_NEXELL_SCALER "misc.nexell.scaler"
 
 #define NEXELL_SCALER(obj) \
@@ -82,6 +81,6 @@ typedef struct {
 } NexellScalerState;
 
 NexellScalerState *nexell_scaler_create(MemoryRegion *address_space, hwaddr base,
-		qemu_irq irq);
+		int size, qemu_irq irq);
 
 #endif
