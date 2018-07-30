@@ -33,6 +33,7 @@
 #include "hw/riscv/nexell_plic.h"
 #include "hw/riscv/nexell_clint.h"
 #include "hw/misc/nexell_scaler.h"
+#include "hw/riscv/nexell_vip.h"
 #include "hw/riscv/nexell_uart.h"
 #include "hw/adc/nexell_adc.h"
 #include "hw/timer/nexell_pwm.h"
@@ -51,6 +52,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_MROM] =     {    0x1000,     0x10000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
+    [NEXELL_SWALLOW_VIP] =	{ 0x20400000,    0x10000 },
     [NEXELL_SWALLOW_SCALER] =   { 0x20410000,    0x10000 },
     [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
     [NEXELL_SWALLOW_PWM0] =     { 0x208f0000,	 0x10000 },
@@ -393,6 +395,11 @@ static void nexell_swallow_board_init(MachineState *machine)
 	    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio[i]), 0,
 			    SWALLOW_GPIOn_ADDR[i]);
     }
+	/* VIP */
+	nexell_vip_create(system_memory,
+			memmap[NEXELL_SWALLOW_VIP].base,
+			memmap[NEXELL_SWALLOW_VIP].size,
+			NEXELL_PLIC(s->plic)->irqs[VIP_IRQ]);
 	/* SCALER */
 	nexell_scaler_create(system_memory,
 			memmap[NEXELL_SWALLOW_SCALER].base,
