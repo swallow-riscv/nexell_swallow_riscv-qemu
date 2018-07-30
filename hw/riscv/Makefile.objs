@@ -14,4 +14,5 @@ obj-y += nexell_prci.o
 obj-y += nexell_plic.o
 obj-y += nexell_test.o
 obj-y += nexell_uart.o
+obj-y += nexell_vip.o
 obj-y += nexell_swallow.o
