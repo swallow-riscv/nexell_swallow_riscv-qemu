@@ -51,6 +51,9 @@ typedef struct {
     NexellPWMState pwm0;
     NexellPWMState pwm1;
     NexellPWMState pwm2;
+    SWALLOWSpiState spi0;
+    SWALLOWSpiState spi1;
+    SWALLOWSpiState spi2;
     void *fdt;
     int fdt_size;
 
@@ -66,6 +69,9 @@ enum {
     NEXELL_SWALLOW_ADC0,
     NEXELL_SWALLOW_VIP,
     NEXELL_SWALLOW_SCALER,
+    NEXELL_SWALLOW_SPI0,
+    NEXELL_SWALLOW_SPI1,
+    NEXELL_SWALLOW_SPI2,
     NEXELL_SWALLOW_UART0,
     NEXELL_SWALLOW_PWM0,
     NEXELL_SWALLOW_PWM1,
@@ -89,6 +95,9 @@ enum {
     UART4_IRQ = 60,
     UART5_IRQ = 61,
     ADC0_IRQ = 46,
+    SPI0_IRQ = 48,
+    SPI1_IRQ = 49,
+    SPI2_IRQ = 50,
     PWM0_IRQ_INT0 = 62,
     PWM1_IRQ_INT0 = 66,
     PWM2_IRQ_INT0 = 70,
