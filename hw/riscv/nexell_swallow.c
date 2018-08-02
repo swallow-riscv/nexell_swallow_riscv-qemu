@@ -44,6 +44,10 @@
 #include "sysemu/device_tree.h"
 #include "exec/address-spaces.h"
 #include "elf.h"
+#include "hw/i2c/i2c.h"
+#include "hw/i2c/smbus.h"
+#include "qemu/typedefs.h"
+#include "hw/misc/tmp105.h"
 
 static const struct MemmapEntry {
     hwaddr base;
@@ -53,10 +57,19 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_MROM] =     {    0x1000,     0x10000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
-    [NEXELL_SWALLOW_VIP] =	{ 0x20400000,    0x10000 },
-    [NEXELL_SWALLOW_SCALER] =   { 0x20410000,    0x10000 },
-    [NEXELL_SWALLOW_SPI1] =     { 0x20810000,     0x1000 },
-    [NEXELL_SWALLOW_SPI2] =     { 0x20820000,     0x1000 },
+    [NEXELL_SWALLOW_SCALER] =   { 0x20410000,     0x1000 },
+    [NEXELL_SWALLOW_I2C0] =     { 0x20600000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C1] =     { 0x20610000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C2] =     { 0x20620000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C3] =     { 0x20630000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C4] =     { 0x20640000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C5] =     { 0x20650000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C6] =     { 0x20660000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C7] =     { 0x20670000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C8] =     { 0x20680000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C9] =     { 0x20690000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C10] =    { 0x206a0000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C11] =    { 0x206b0000,	 0x10000 },
     [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
     [NEXELL_SWALLOW_PWM0] =     { 0x208f0000,	 0x10000 },
     [NEXELL_SWALLOW_PWM1] =     { 0x20900000,	 0x10000 },
@@ -436,24 +449,18 @@ static void nexell_swallow_board_init(MachineState *machine)
 	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_PWM2].base,
 			&s->pwm2.iomem);
 
-    /* SPI0 */
-    object_initialize(&s->spi0, sizeof(s->spi0), TYPE_SWALLOW_SPI);
-    object_property_set_bool(OBJECT(&s->spi0), true, "realized",
-                             &error_abort);
-    memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_SPI0].base,
-                                 &s->spi0.mmio);
+	/* I2C */
+	for(i = 0; i < SWALLOW_NUM_I2C; i++) {
+		object_initialize(&s->i2c[i], sizeof(s->i2c[i]), TYPE_NEXELL_I2C);
+		s->i2c[i].irq = NEXELL_PLIC(s->plic)->irqs[I2C0_IRQ + i];
+		object_property_set_bool(OBJECT(&s->i2c[i]), true, "realized",
+				&error_abort);
+		memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_I2C0 + i].base,
+				&s->i2c[i].iomem);
+	}
 
-    object_initialize(&s->spi1, sizeof(s->spi1), TYPE_SWALLOW_SPI);
-    object_property_set_bool(OBJECT(&s->spi1), true, "realized",
-                             &error_abort);
-    memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_SPI1].base,
-                                 &s->spi1.mmio);
-
-    object_initialize(&s->spi2, sizeof(s->spi2), TYPE_SWALLOW_SPI);
-    object_property_set_bool(OBJECT(&s->spi2), true, "realized",
-                             &error_abort);
-    memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_SPI2].base,
-                                 &s->spi2.mmio);
+	/* TMP105 */
+	i2c_create_slave(s->i2c[0].bus, TYPE_TMP105, 0x24);
 }
 
 static void nexell_swallow_board_machine_init(MachineClass *mc)

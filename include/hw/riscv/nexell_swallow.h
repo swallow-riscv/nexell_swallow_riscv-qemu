@@ -20,6 +20,7 @@
 #define HW_NEXELL_SWALLOW_H
 
 #include "hw/gpio/nxp3220_gpio.h"
+#include "hw/i2c/nexell_i2c.h"
 
 #define TYPE_NEXELL_SWALLOW_BOARD "riscv.nexell_swallow"
 #define NEXELL_SWALLOW(obj) \
@@ -27,6 +28,7 @@
 
 enum SwallowConfiguration {
 	SWALLOW_NUM_GPIOS = 8,
+	SWALLOW_NUM_I2C = 12,
 };
 
 enum SwallowMemoryMap {
@@ -51,9 +53,7 @@ typedef struct {
     NexellPWMState pwm0;
     NexellPWMState pwm1;
     NexellPWMState pwm2;
-    SWALLOWSpiState spi0;
-    SWALLOWSpiState spi1;
-    SWALLOWSpiState spi2;
+    NEXELLI2CState i2c[SWALLOW_NUM_I2C];
     void *fdt;
     int fdt_size;
 
@@ -66,6 +66,18 @@ enum {
     NEXELL_SWALLOW_TEST,
     NEXELL_SWALLOW_CLINT,
     NEXELL_SWALLOW_PLIC,
+    NEXELL_SWALLOW_I2C0,
+    NEXELL_SWALLOW_I2C1,
+    NEXELL_SWALLOW_I2C2,
+    NEXELL_SWALLOW_I2C3,
+    NEXELL_SWALLOW_I2C4,
+    NEXELL_SWALLOW_I2C5,
+    NEXELL_SWALLOW_I2C6,
+    NEXELL_SWALLOW_I2C7,
+    NEXELL_SWALLOW_I2C8,
+    NEXELL_SWALLOW_I2C9,
+    NEXELL_SWALLOW_I2C10,
+    NEXELL_SWALLOW_I2C11,
     NEXELL_SWALLOW_ADC0,
     NEXELL_SWALLOW_VIP,
     NEXELL_SWALLOW_SCALER,
@@ -88,6 +100,18 @@ enum {
 enum {
     VIP_IRQ = 14,
     SCALER_IRQ = 18,
+    I2C0_IRQ = 34,
+    I2C1_IRQ = 35,
+    I2C2_IRQ = 36,
+    I2C3_IRQ = 37,
+    I2C4_IRQ = 38,
+    I2C5_IRQ = 39,
+    I2C6_IRQ = 40,
+    I2C7_IRQ = 41,
+    I2C8_IRQ = 42,
+    I2C9_IRQ = 43,
+    I2C10_IRQ = 44,
+    I2C11_IRQ = 45,
     UART0_IRQ = 56,
     UART1_IRQ = 57,
     UART2_IRQ = 58,
