@@ -38,6 +38,7 @@
 #include "hw/adc/nexell_adc.h"
 #include "hw/timer/nexell_pwm.h"
 #include "hw/ssi/nexell_dw_spi.h"
+#include "hw/usb/nexell_usb.h"
 #include "hw/riscv/nexell_swallow.h"
 #include "chardev/char.h"
 #include "sysemu/arch_init.h"
@@ -75,6 +76,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_PWM1] =     { 0x20900000,	 0x10000 },
     [NEXELL_SWALLOW_PWM2] =     { 0x208e0000,	 0x10000 },
     [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,	 0x10000 },
+    [NEXELL_SWALLOW_USB] =      { 0x20D00000,	 0x10000 },
     [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
     [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
 };
@@ -461,6 +463,12 @@ static void nexell_swallow_board_init(MachineState *machine)
 
 	/* TMP105 */
 	i2c_create_slave(s->i2c[0].bus, TYPE_TMP105, 0x24);
+
+	/* USB */
+	nexell_usb_create(system_memory,
+			memmap[NEXELL_SWALLOW_USB].base,
+			memmap[NEXELL_SWALLOW_USB].size,
+			NEXELL_PLIC(s->plic)->irqs[USB_IRQ]);
 }
 
 static void nexell_swallow_board_machine_init(MachineClass *mc)
