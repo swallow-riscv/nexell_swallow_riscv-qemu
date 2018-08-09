@@ -45,6 +45,10 @@ enum {
 	CMD_DST_ADDR = 4,
 	CMD_DST_STRIDE = 5,
 	CMD_DST_SIZE = 8,
+	CMD_SRC_CBADDR = 17,
+	CMD_SRC_CBSTRIDE = 18,
+	CMD_DST_CBADDR = 20,
+	CMD_DST_CBSTRIDE = 21,
 };
 
 static uint64_t
@@ -219,10 +223,11 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 		if (val) {
 			uint32_t *cmd_buf = s->regs.cmdbufaddr;
 			dma_addr_t dst_addr = (dma_addr_t)NULL, src_addr = (dma_addr_t)NULL;
+			dma_addr_t dst_cbaddr = (dma_addr_t)NULL, src_cbaddr = (dma_addr_t)NULL;
 			int src_size, dst_size, src_stride, dst_stride;
-			uint32_t buf[CMD_DST_SIZE+1];
-			/*uint8_t *src_buf = NULL;*/
-			/*uint32_t i = 0;*/
+			int src_cbstride, dst_cbstride, src_hstride, dst_hstride;
+			uint32_t buf[CMD_DST_CBSTRIDE+1];
+			uint8_t *src_buf = NULL;
 
 			cpu_physical_memory_read((int64_t)cmd_buf, buf, sizeof(buf));
 			src_addr = (dma_addr_t)buf[CMD_SRC_ADDR];
@@ -231,21 +236,44 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 			dst_addr = (dma_addr_t)buf[CMD_DST_ADDR];
 			dst_stride = buf[CMD_DST_STRIDE];
 			dst_size = buf[CMD_DST_SIZE];
-			qemu_log("[Scaling] src - addr:%p, stride:%d, size:%d\n",
-					(void*)src_addr, src_stride, src_size);
-			qemu_log("[Scaling] dst - addr:%p, stride:%d, size:%d\n",
-					(void*)dst_addr, dst_stride, dst_size);
-			qemu_irq_raise(s->irq);
-			/*src_buf = g_malloc(1280);
+			src_cbaddr = (dma_addr_t)buf[CMD_SRC_CBADDR];
+			src_cbstride = buf[CMD_SRC_CBSTRIDE];
+			dst_cbaddr = (dma_addr_t)buf[CMD_DST_CBADDR];
+			dst_cbstride = buf[CMD_DST_CBSTRIDE];
+			src_hstride = (src_cbaddr - src_addr) / src_stride;
+			dst_hstride = (dst_cbaddr - dst_addr) / dst_stride;
+			src_size = ((src_stride * src_hstride) +
+				((src_cbstride * src_hstride) * 2));
+			dst_size = ((dst_stride * dst_hstride) +
+				((dst_cbstride * dst_hstride) * 2));
+			qemu_log("[Scaling] src - addr:%p, stride:[Y:%d, CB:%d], hstride:%d, size:%d\n",
+					(void*)src_addr, src_stride, src_cbstride, src_hstride, src_size);
+			qemu_log("[Scaling] dst - addr:%p, stride:[Y:%d, CB:%d], hstride:%d, size:%d\n",
+					(void*)dst_addr, dst_stride, dst_cbstride, dst_hstride, dst_size);
+#if 0
+			int i;
+			int packet = 0x5000;
+			src_buf = g_malloc(packet);
 			if (src_buf == NULL) {
 				qemu_log("[Scaling] Failed to alloc buf for src\n");
 				break;
 			}
-			for (i = 0; i < src_size; i += 1280) {
-				cpu_physical_memory_read((int64_t)src_addr + i, src_buf, 1280);
+			for (i = 0; i < src_size; i += packet) {
+				if ((i + packet) > src_size)
+					packet = src_size - i;
+				cpu_physical_memory_read((int64_t)src_addr + i, src_buf, packet);
 				qemu_log("[%d]write\n", i);
-				cpu_physical_memory_write((int64_t)dst_addr + i, src_buf, 1280);
+				cpu_physical_memory_write((int64_t)dst_addr + i, src_buf, packet);
 			}
+#else
+			src_buf = g_malloc(src_size);
+			if (src_buf == NULL) {
+				qemu_log("[Scaling] Failed to alloc buf for src\n");
+				break;
+			}
+			cpu_physical_memory_read((int64_t)src_addr, src_buf, src_size);
+			cpu_physical_memory_write((int64_t)dst_addr, src_buf, src_size);
+#endif
 			qemu_log("[Scaling] copy done\n");
 			if (s->regs.intreg &
 					(1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_ENABLE))) {
@@ -257,7 +285,6 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 			if (src_buf)
 				g_free(src_buf);
 			qemu_log("[Scaling] free buf\n");
-			*/
 		}
 		s->regs.cmdbufcon = val;
 	}
