@@ -461,9 +461,6 @@ static void nexell_swallow_board_init(MachineState *machine)
 				&s->i2c[i].iomem);
 	}
 
-	/* TMP105 */
-	i2c_create_slave(s->i2c[0].bus, TYPE_TMP105, 0x24);
-
 	/* USB */
 	nexell_usb_create(system_memory,
 			memmap[NEXELL_SWALLOW_USB].base,
