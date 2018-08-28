@@ -58,6 +58,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_MROM] =     {    0x1000,     0x10000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
+    [NEXELL_SWALLOW_VIP] =	{ 0x20400000,    0x10000 },
     [NEXELL_SWALLOW_SCALER] =   { 0x20410000,     0x1000 },
     [NEXELL_SWALLOW_I2C0] =     { 0x20600000,	 0x10000 },
     [NEXELL_SWALLOW_I2C1] =     { 0x20610000,	 0x10000 },
