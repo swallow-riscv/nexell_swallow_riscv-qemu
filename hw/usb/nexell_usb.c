@@ -75,7 +75,7 @@ static void init_reg_values(NexellUsbState *s)
 	set_reg_value(s, GRXSTSR, 0x00000000);
 	set_reg_value(s, GRXSTSP, 0x00000000);
 	set_reg_value(s, GRXFSIZ, 0x00000400);
-	set_reg_value(s, GNPTXFSIZ, 0x04000400);
+	set_reg_value(s, GNPTXFSIZ, 0x00400400);
 	set_reg_value(s, GNPTXSTS, 0x00080040);
 	set_reg_value(s, GI2CCTL, 0x00000000);
 	set_reg_value(s, GPVNDCTL, 0x00000000);
@@ -88,13 +88,8 @@ static void init_reg_values(NexellUsbState *s)
 	set_reg_value(s, GHWCFG4, 0x0a008030);
 	set_reg_value(s, GLPMCFG, 0x00000000);
 	set_reg_value(s, HPTXFSIZ, 0x00000000);
-#if 1
-	set_reg_value(s, DPTXFSIZN(1), 0x0400095c);
-	set_reg_value(s, DPTXFSIZN(2), 0x04000d5c);
-#else
-	set_reg_value(s, DPTXFSIZN(1), 0x00000000);
-	set_reg_value(s, DPTXFSIZN(2), 0x00000000);
-#endif
+	set_reg_value(s, DPTXFSIZN(1), 0x02000440);
+	set_reg_value(s, DPTXFSIZN(2), 0x02000640);
 	set_reg_value(s, DPTXFSIZN(3), 0x00000000);
 	set_reg_value(s, DPTXFSIZN(4), 0x00000000);
 	set_reg_value(s, DPTXFSIZN(5), 0x00000000);
