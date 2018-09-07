@@ -21,6 +21,7 @@
 
 #include "hw/gpio/nxp3220_gpio.h"
 #include "hw/i2c/nexell_i2c.h"
+#include "hw/watchdog/wdt_nexell.h"
 
 #define TYPE_NEXELL_SWALLOW_BOARD "riscv.nexell_swallow"
 #define NEXELL_SWALLOW(obj) \
@@ -54,6 +55,8 @@ typedef struct {
     NexellPWMState pwm1;
     NexellPWMState pwm2;
     NEXELLI2CState i2c[SWALLOW_NUM_I2C];
+    NexellWDTState wdt;
+
     void *fdt;
     int fdt_size;
 
@@ -79,6 +82,7 @@ enum {
     NEXELL_SWALLOW_I2C10,
     NEXELL_SWALLOW_I2C11,
     NEXELL_SWALLOW_ADC0,
+    NEXELL_SWALLOW_WDT,
     NEXELL_SWALLOW_VIP,
     NEXELL_SWALLOW_SCALER,
     NEXELL_SWALLOW_SPI0,
@@ -121,6 +125,7 @@ enum {
     UART4_IRQ = 60,
     UART5_IRQ = 61,
     ADC0_IRQ = 46,
+    WDT_IRQ = 47,
     SPI0_IRQ = 48,
     SPI1_IRQ = 49,
     SPI2_IRQ = 50,

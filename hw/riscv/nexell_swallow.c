@@ -77,6 +77,7 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_PWM1] =     { 0x20900000,	 0x10000 },
     [NEXELL_SWALLOW_PWM2] =     { 0x208e0000,	 0x10000 },
     [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,	 0x10000 },
+    [NEXELL_SWALLOW_WDT] =      { 0x206D0000,	 0x10000 },
     [NEXELL_SWALLOW_USB] =      { 0x20D00000,	 0x10000 },
     [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
     [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
@@ -461,6 +462,14 @@ static void nexell_swallow_board_init(MachineState *machine)
 		memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_I2C0 + i].base,
 				&s->i2c[i].iomem);
 	}
+
+	/* WDT */
+	object_initialize(&s->wdt, sizeof(s->wdt), TYPE_NEXELL_WDT);
+	s->wdt.irq = NEXELL_PLIC(s->plic)->irqs[WDT_IRQ];
+	object_property_set_bool(OBJECT(&s->wdt), true, "realized",
+			&error_abort);
+	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_WDT].base,
+			&s->wdt.iomem);
 
 	/* USB */
 	nexell_usb_create(system_memory,
