@@ -30,6 +30,8 @@
 #include "exec/log.h"
 #include "hw/ppc/spapr.h"
 
+#define RISCV_DEBUG_VIP 0
+
 #define VIP_FRAMERATE_MS	30
 
 static void set_reg_value(NexellVipState *s, hwaddr offset,
@@ -137,7 +139,9 @@ static void update_frame(NexellVipState *s)
 
 static void set_stream(NexellVipState *s, bool enable)
 {
-	qemu_log("[%s] %s\n", __func__, (enable) ? "stream start" : "stop stream");
+	if (RISCV_DEBUG_VIP)
+		qemu_log("[%s] %s\n", __func__, (enable) ? "stream start" : "stop stream");
+
 	if (enable) {
 		s->timer = timer_new_ms(QEMU_CLOCK_VIRTUAL, (QEMUTimerCB*)update_frame, s);
 		timer_mod(s->timer, qemu_clock_get_ms(QEMU_CLOCK_VIRTUAL) + VIP_FRAMERATE_MS);
@@ -156,7 +160,8 @@ nexell_vip_read(void *opaque, hwaddr offset, unsigned int size)
 
 	for (i = 0; i < VIP_NUM_OF_REGISTERS; i++) {
 		if (reg_p->offset == offset) {
-			qemu_log("[read] %s [0x%04x] -> 0x%04x\n", reg_p->name,
+			if (RISCV_DEBUG_VIP)
+				qemu_log("[read] %s [0x%04x] -> 0x%04x\n", reg_p->name,
 						(uint32_t)offset, s->regs[i]);
 			return s->regs[i];
 		}
@@ -177,72 +182,93 @@ nexell_vip_write(void *opaque, hwaddr offset,
 
 	for (i = 0; i < VIP_NUM_OF_REGISTERS; i++) {
 		if (reg_p->offset == offset) {
-			qemu_log("[write] %s [0x%04x] val:0x%04x\n", reg_p->name,
+			if (RISCV_DEBUG_VIP)
+				qemu_log("[write] %s [0x%04x] val:0x%04x\n", reg_p->name,
 						(uint32_t)offset, (uint32_t)val);
 			switch (offset) {
 				case VIP_HVINT:
-					if (!val)
-						qemu_log("disable h/vsync interrrupt all\n");
-					else {
+					if (!val) {
+						if (RISCV_DEBUG_VIP)
+							qemu_log("disable h/vsync interrrupt all\n");
+					} else {
 						if (val &
 							(VIP_HVINT_PEND_VAL << VIP_HVINT_PEND_BIT)) {
-								qemu_log("clear h/vsync interrupt\n");
+								if (RISCV_DEBUG_VIP)
+									qemu_log("clear h/vsync interrupt\n");
 								val &= ~VIP_HVINT_PEND_MASK;
 							}
 					}
 					break;
 				case VIP_ODINT:
-					if (!val)
-						qemu_log("disable done interrrup\nt");
-					else {
+					if (!val) {
+						if (RISCV_DEBUG_VIP)
+							qemu_log("disable done interrrup\nt");
+					} else {
 						if (val & (1 << VIP_ODINT_PEND_BIT)) {
-							qemu_log("clear done interrupt\n");
+							if (RISCV_DEBUG_VIP)
+								qemu_log("clear done interrupt\n");
 							val &= ~(1 << VIP_ODINT_PEND_BIT);
 						}
 					}
 					break;
 				case VIP_CDENB:
-					if (!val)
-						qemu_log("disable seperator, clip and deci\n");
-					else {
+					if (!val) {
+						if (RISCV_DEBUG_VIP)
+							qemu_log("disable seperator, clip and deci\n");
+					} else {
 						uint64_t v = get_reg_value(s, offset);
 
 						if (val & (1 << VIP_SEP_ENB_BIT)) {
-							if (!(v & (1 << VIP_SEP_ENB_BIT)))
-								qemu_log("enable seperator\n");
+							if (!(v & (1 << VIP_SEP_ENB_BIT))) {
+								if (RISCV_DEBUG_VIP)
+									qemu_log("enable seperator\n");
+							}
 						} else {
-							if (v & (1 << VIP_SEP_ENB_BIT))
-								qemu_log("disable seperator\n");
+							if (v & (1 << VIP_SEP_ENB_BIT)) {
+								if (RISCV_DEBUG_VIP)
+									qemu_log("disable seperator\n");
+							}
 						}
 						if (val & (1 << VIP_CLIP_ENB_BIT)) {
-							if (!(v & (1 << VIP_CLIP_ENB_BIT)))
-								qemu_log("enable clipper\n");
+							if (!(v & (1 << VIP_CLIP_ENB_BIT))) {
+								if (RISCV_DEBUG_VIP)
+									qemu_log("enable clipper\n");
+							}
 						} else {
-							if (v & (1 << VIP_CLIP_ENB_BIT))
-								qemu_log("disable clipper\n");
+							if (v & (1 << VIP_CLIP_ENB_BIT)) {
+								if (RISCV_DEBUG_VIP)
+									qemu_log("disable clipper\n");
+							}
 						}
 						if (val & (1 << VIP_DECI_ENB_BIT)) {
-							if (!(v & (1 << VIP_DECI_ENB_BIT)))
-								qemu_log("enable decimator\n");
+							if (!(v & (1 << VIP_DECI_ENB_BIT))) {
+								if (RISCV_DEBUG_VIP)
+									qemu_log("enable decimator\n");
+							}
 						} else {
-							if (v & (1 << VIP_DECI_ENB_BIT))
-								qemu_log("disable decimator\n");
+							if (v & (1 << VIP_DECI_ENB_BIT)) {
+								if (RISCV_DEBUG_VIP)
+									qemu_log("disable decimator\n");
+							}
 						}
 					}
 					break;
 				case VIP_CONFIG:
-					if (!val)
-						qemu_log("disable vip");
-					else {
+					if (!val) {
+						if (RISCV_DEBUG_VIP)
+							qemu_log("disable vip");
+					} else {
 						uint64_t v = get_reg_value(s, offset);
 						if (val & (1 << VIP_ENB_BIT)) {
 							if (!(v & (1 << VIP_ENB_BIT))) {
-								qemu_log("enable vip\n");
+								if (RISCV_DEBUG_VIP)
+									qemu_log("enable vip\n");
 								set_stream(s, true);
 							}
 						} else {
 							if (v & (1 << VIP_ENB_BIT)) {
-								qemu_log("disable vip\n");
+								if (RISCV_DEBUG_VIP)
+									qemu_log("disable vip\n");
 								set_stream(s, false);
 							}
 						}
@@ -283,6 +309,7 @@ NexellVipState *nexell_vip_create(MemoryRegion *address_space, hwaddr base,
 	memory_region_init_io(&s->mmio, NULL, &vip_ops, s,
 				TYPE_NEXELL_VIP, size);
 	memory_region_add_subregion(address_space, s->base_addr, &s->mmio);
-	qemu_log("[%s] hwaddr base:0x%4x\n", __func__, (int)s->base_addr);
+	if (RISCV_DEBUG_VIP)
+		qemu_log("[%s] hwaddr base:0x%4x\n", __func__, (int)s->base_addr);
 	return s;
 }
