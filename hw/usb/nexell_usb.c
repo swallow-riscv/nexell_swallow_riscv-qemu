@@ -30,6 +30,8 @@
 #include "hw/ppc/spapr.h"
 #include "hw/usb/nexell_usb.h"
 
+#define NEXELL_DEBUG_USB 0
+
 static void set_reg_value(NexellUsbState *s, hwaddr offset,
 		uint64_t val)
 {
@@ -63,7 +65,8 @@ static uint64_t get_reg_value(NexellUsbState *s, hwaddr offset)
 
 static void init_reg_values(NexellUsbState *s)
 {
-	qemu_log("[%s]\n", __func__);
+	if (NEXELL_DEBUG_USB)
+		qemu_log("[%s]\n", __func__);
 
 	set_reg_value(s, GOTGCTL, 0x000d0000);
 	set_reg_value(s, GOTGINT, 0x00000000);
@@ -128,7 +131,8 @@ nexell_usb_read(void *opaque, hwaddr offset, unsigned int size)
 
 	for (i = 0; i < USB_NUM_OF_REGISTERS; i++) {
 		if (reg_p->offset == offset) {
-			qemu_log("[read] %s [0x%04x] -> 0x%04x\n", reg_p->name,
+			if (NEXELL_DEBUG_USB)
+				qemu_log("[read] %s [0x%04x] -> 0x%04x\n", reg_p->name,
 						(uint32_t)offset, s->regs[i]);
 			return s->regs[i];
 		}
@@ -149,25 +153,29 @@ nexell_usb_write(void *opaque, hwaddr offset,
 
 	for (i = 0; i < USB_NUM_OF_REGISTERS; i++) {
 		if (reg_p->offset == offset) {
-			qemu_log("[write] %s [0x%04x] val:0x%04x\n", reg_p->name,
+			if (NEXELL_DEBUG_USB)
+				qemu_log("[write] %s [0x%04x] val:0x%04x\n", reg_p->name,
 						(uint32_t)offset, (uint32_t)val);
 			switch (offset) {
 				case GRSTCTL:
 					if (val) {
 						if (val & GRSTCTL_CSFTRST) {
-							qemu_log("reset all register\n");
+							if (NEXELL_DEBUG_USB)
+								qemu_log("reset all register\n");
 							/* give some delay */
 							val &= ~GRSTCTL_CSFTRST;
 							val |= GRSTCTL_AHBIDLE;
 						}
 						if (val & GRSTCTL_TXFFLSH) {
-							qemu_log("TX FIFO Flusing\n");
+							if (NEXELL_DEBUG_USB)
+								qemu_log("TX FIFO Flusing\n");
 							/* give some delay */
 							val &= ~GRSTCTL_TXFFLSH;
 							val &= ~GRSTCTL_TXFNUM_MASK;
 						}
 						if (val & GRSTCTL_RXFFLSH) {
-							qemu_log("RX FIFO Flusing\n");
+							if (NEXELL_DEBUG_USB)
+								qemu_log("RX FIFO Flusing\n");
 							/* give some delay */
 							val &= ~GRSTCTL_RXFFLSH;
 						}
@@ -208,7 +216,8 @@ NexellUsbState *nexell_usb_create(MemoryRegion *address_space, hwaddr base,
 	memory_region_init_io(&s->mmio, NULL, &usb_ops, s,
 				TYPE_NEXELL_USB, size);
 	memory_region_add_subregion(address_space, s->base_addr, &s->mmio);
-	qemu_log("[%s] hwaddr base:0x%4x\n", __func__, (int)s->base_addr);
+	if (NEXELL_DEBUG_USB)
+		qemu_log("[%s] hwaddr base:0x%4x\n", __func__, (int)s->base_addr);
 	init_reg_values(s);
 
 	return s;
