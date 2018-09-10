@@ -202,7 +202,7 @@ static uint64_t nexell_plic_read(void *opaque, hwaddr addr, unsigned size)
     }
 
     if (addr >= plic->priority_base && /* 4 bytes per source */
-        addr < plic->priority_base + (plic->num_sources << 2))
+        addr <= plic->priority_base + (plic->num_sources << 2))
     {
         uint32_t irq = (addr - plic->priority_base) >> 2;
         if (RISCV_DEBUG_PLIC) {
@@ -220,11 +220,11 @@ static uint64_t nexell_plic_read(void *opaque, hwaddr addr, unsigned size)
         }
         return plic->pending[word];
     } else if (addr >= plic->enable_base && /* 1 bit per source */
-             addr < plic->enable_base + plic->num_addrs * plic->enable_stride)
+             addr <= plic->enable_base + plic->num_addrs * plic->enable_stride)
     {
         uint32_t addrid = (addr - plic->enable_base) / plic->enable_stride;
         uint32_t wordid = (addr & (plic->enable_stride - 1)) >> 2;
-        if (wordid < plic->bitfield_words) {
+        if (wordid <= plic->bitfield_words) {
             if (RISCV_DEBUG_PLIC) {
                 qemu_log("plic: read enable: hart%d-%c word=%d value=%x\n",
                     plic->addr_config[addrid].hartid,
@@ -275,7 +275,7 @@ static void nexell_plic_write(void *opaque, hwaddr addr, uint64_t value,
     }
 
     if (addr >= plic->priority_base && /* 4 bytes per source */
-        addr < plic->priority_base + (plic->num_sources << 2))
+        addr <= plic->priority_base + (plic->num_sources << 2))
     {
         uint32_t irq = (addr - plic->priority_base) >> 2;
         plic->source_priority[irq] = value & 7;
@@ -290,11 +290,11 @@ static void nexell_plic_write(void *opaque, hwaddr addr, uint64_t value,
         error_report("plic: invalid pending write: %08x", (uint32_t)addr);
         return;
     } else if (addr >= plic->enable_base && /* 1 bit per source */
-        addr < plic->enable_base + plic->num_addrs * plic->enable_stride)
+        addr <= plic->enable_base + plic->num_addrs * plic->enable_stride)
     {
         uint32_t addrid = (addr - plic->enable_base) / plic->enable_stride;
         uint32_t wordid = (addr & (plic->enable_stride - 1)) >> 2;
-        if (wordid < plic->bitfield_words) {
+        if (wordid <= plic->bitfield_words) {
             plic->enable[addrid * plic->bitfield_words + wordid] = value;
             if (RISCV_DEBUG_PLIC) {
                 qemu_log("plic: write enable: hart%d-%c word=%d value=%x\n",
