@@ -54,31 +54,31 @@ static const struct MemmapEntry {
     hwaddr base;
     hwaddr size;
 } nexell_swallow_memmap[] = {
-    [NEXELL_SWALLOW_DEBUG] =    {        0x0,     0x1000 },
-    [NEXELL_SWALLOW_MROM] =     {    0x1000,     0x10000 },
+    [NEXELL_SWALLOW_DEBUG] =    {       0x0,      0x1000 },
+    [NEXELL_SWALLOW_MROM] =     {     0x1000,    0x10000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
-    [NEXELL_SWALLOW_VIP] =	{ 0x20400000,    0x10000 },
+    [NEXELL_SWALLOW_VIP] =      { 0x20400000,    0x10000 },
     [NEXELL_SWALLOW_SCALER] =   { 0x20410000,     0x1000 },
-    [NEXELL_SWALLOW_I2C0] =     { 0x20600000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C1] =     { 0x20610000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C2] =     { 0x20620000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C3] =     { 0x20630000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C4] =     { 0x20640000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C5] =     { 0x20650000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C6] =     { 0x20660000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C7] =     { 0x20670000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C8] =     { 0x20680000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C9] =     { 0x20690000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C10] =    { 0x206a0000,	 0x10000 },
-    [NEXELL_SWALLOW_I2C11] =    { 0x206b0000,	 0x10000 },
-    [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
-    [NEXELL_SWALLOW_PWM0] =     { 0x208f0000,	 0x10000 },
-    [NEXELL_SWALLOW_PWM1] =     { 0x20900000,	 0x10000 },
-    [NEXELL_SWALLOW_PWM2] =     { 0x208e0000,	 0x10000 },
-    [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,	 0x10000 },
-    [NEXELL_SWALLOW_WDT] =      { 0x206D0000,	 0x10000 },
-    [NEXELL_SWALLOW_USB] =      { 0x20D00000,	 0x10000 },
+    [NEXELL_SWALLOW_I2C0] =     { 0x20600000,    0x10000 },
+    [NEXELL_SWALLOW_I2C1] =     { 0x20610000,    0x10000 },
+    [NEXELL_SWALLOW_I2C2] =     { 0x20620000,    0x10000 },
+    [NEXELL_SWALLOW_I2C3] =     { 0x20630000,    0x10000 },
+    [NEXELL_SWALLOW_I2C4] =     { 0x20640000,    0x10000 },
+    [NEXELL_SWALLOW_I2C5] =     { 0x20650000,    0x10000 },
+    [NEXELL_SWALLOW_I2C6] =     { 0x20660000,    0x10000 },
+    [NEXELL_SWALLOW_I2C7] =     { 0x20670000,    0x10000 },
+    [NEXELL_SWALLOW_I2C8] =     { 0x20680000,    0x10000 },
+    [NEXELL_SWALLOW_I2C9] =     { 0x20690000,    0x10000 },
+    [NEXELL_SWALLOW_I2C10] =    { 0x206a0000,    0x10000 },
+    [NEXELL_SWALLOW_I2C11] =    { 0x206b0000,    0x10000 },
+    [NEXELL_SWALLOW_UART0] =    { 0x20880000,    0x1000 },
+    [NEXELL_SWALLOW_PWM0] =     { 0x208e0000,    0x10000 },
+    [NEXELL_SWALLOW_PWM1] =     { 0x208f0000,    0x10000 },
+    [NEXELL_SWALLOW_PWM2] =     { 0x20900000,    0x10000 },
+    [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,    0x10000 },
+    [NEXELL_SWALLOW_WDT] =      { 0x206D0000,    0x10000 },
+    [NEXELL_SWALLOW_USB] =      { 0x20D00000,    0x10000 },
     [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
     [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
 };
@@ -415,11 +415,13 @@ static void nexell_swallow_board_init(MachineState *machine)
 	    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio[i]), 0,
 			    SWALLOW_GPIOn_ADDR[i]);
     }
+
 	/* VIP */
 	nexell_vip_create(system_memory,
 			memmap[NEXELL_SWALLOW_VIP].base,
 			memmap[NEXELL_SWALLOW_VIP].size,
 			NEXELL_PLIC(s->plic)->irqs[VIP_IRQ]);
+
 	/* SCALER */
 	nexell_scaler_create(system_memory,
 			memmap[NEXELL_SWALLOW_SCALER].base,
@@ -440,12 +442,14 @@ static void nexell_swallow_board_init(MachineState *machine)
 			&error_abort);
 	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_PWM0].base,
 			&s->pwm0.iomem);
+
 	/* PWM1 */
 	object_initialize(&s->pwm1, sizeof(s->pwm1), TYPE_NEXELL_PWM);
 	object_property_set_bool(OBJECT(&s->pwm1), true, "realized",
 			&error_abort);
 	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_PWM1].base,
 			&s->pwm1.iomem);
+
 	/* PWM2 */
 	object_initialize(&s->pwm2, sizeof(s->pwm2), TYPE_NEXELL_PWM);
 	object_property_set_bool(OBJECT(&s->pwm2), true, "realized",
