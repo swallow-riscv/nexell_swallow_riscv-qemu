@@ -29,6 +29,8 @@
 #include "exec/log.h"
 #include "hw/ppc/spapr.h"
 
+#define NEXELL_DEBUG_SCALER 0
+
 #define NEXELL_SCALER_INT_ENABLE	16
 #define NEXELL_SCALER_INT_CLEAR		8
 
@@ -57,8 +59,8 @@ nexell_scaler_read(void *opaque, hwaddr addr, unsigned int size)
 	NexellScalerState *s = opaque;
 	uint64_t val = 0;
 	int i, j;
-
-	qemu_log("[%s] addr:0x%4x, size:0x%x\n", __func__,
+	if (NEXELL_DEBUG_SCALER)
+		qemu_log("[%s] addr:0x%4x, size:0x%x\n", __func__,
 			(int)addr, size);
 
 	switch (addr) {
@@ -130,7 +132,8 @@ nexell_scaler_read(void *opaque, hwaddr addr, unsigned int size)
 			error_report("[%s] invalid addr:0x%4x\n", __func__, (int)addr);
 		break;
 	}
-	qemu_log("[%s] addr:0x%4x, val:0x%4x, size:0x%x\n",
+	if (NEXELL_DEBUG_SCALER)
+		qemu_log("[%s] addr:0x%4x, val:0x%4x, size:0x%x\n",
 			__func__, (int)addr, (int)val, size);
 	return val;
 }
@@ -142,7 +145,8 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 	NexellScalerState *s = opaque;
 	int i, j;
 
-	qemu_log("[%s] addr:0x%4x, val:0x%4x, size:0x%x\n",
+	if (NEXELL_DEBUG_SCALER)
+		qemu_log("[%s] addr:0x%4x, val:0x%4x, size:0x%x\n",
 			__func__, (int)addr, (int)val, size);
 
 	switch (addr) {
@@ -155,25 +159,30 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 	case NEXELL_SCALER_INTREG:
 	{
 		uint32_t status = s->regs.intreg;
-		if (!val)
-			qemu_log("[%s] disble interrupt all\n", __func__);
-		else{
+		if (!val) {
+			if (NEXELL_DEBUG_SCALER)
+				qemu_log("[%s] disble interrupt all\n", __func__);
+		} else {
 			if (val & (1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_ENABLE))) {
 				if (!(status & (1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_ENABLE))))
-					qemu_log("enable CMD_PROC interrupt\n");
+					if (NEXELL_DEBUG_SCALER)
+						qemu_log("enable CMD_PROC interrupt\n");
 			}
 			if (!(val & (1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_ENABLE)))) {
 				if (status & (1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_ENABLE)))
-					qemu_log("disable CMD_PROC interrupt\n");
+					if (NEXELL_DEBUG_SCALER)
+						qemu_log("disable CMD_PROC interrupt\n");
 			}
 
 			if (val & (1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_CLEAR))) {
-				qemu_log("clear CMD_PROC interrupt\n");
+				if (NEXELL_DEBUG_SCALER)
+					qemu_log("clear CMD_PROC interrupt\n");
 				val &= ~(1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_CLEAR));
 				val &= ~(1 << NEXELL_SCALER_INT_CMD_PROC);
 			}
 			if (val & (1 << (NEXELL_SCALER_INT_DONE + NEXELL_SCALER_INT_CLEAR))) {
-				qemu_log("clear  Done interrupt\n");
+				if (NEXELL_DEBUG_SCALER)
+					qemu_log("clear  Done interrupt\n");
 				val &= ~(1 << (NEXELL_SCALER_INT_DONE + NEXELL_SCALER_INT_CLEAR));
 				val &= ~(1 << NEXELL_SCALER_INT_DONE);
 			}
@@ -219,7 +228,8 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 		break;
 	case NEXELL_SCALER_CMDBUFCON:
 	{
-		qemu_log("[%s] scaler %s\n", __func__, (val) ? "run":"stop");
+		if (NEXELL_DEBUG_SCALER)
+			qemu_log("[%s] scaler %s\n", __func__, (val) ? "run":"stop");
 		if (val) {
 			uint32_t *cmd_buf = s->regs.cmdbufaddr;
 			dma_addr_t dst_addr = (dma_addr_t)NULL, src_addr = (dma_addr_t)NULL;
@@ -246,9 +256,11 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 				((src_cbstride * src_hstride) * 2));
 			dst_size = ((dst_stride * dst_hstride) +
 				((dst_cbstride * dst_hstride) * 2));
-			qemu_log("[Scaling] src - addr:%p, stride:[Y:%d, CB:%d], hstride:%d, size:%d\n",
+			if (NEXELL_DEBUG_SCALER)
+				qemu_log("[Scaling] src - addr:%p, stride:[Y:%d, CB:%d], hstride:%d, size:%d\n",
 					(void*)src_addr, src_stride, src_cbstride, src_hstride, src_size);
-			qemu_log("[Scaling] dst - addr:%p, stride:[Y:%d, CB:%d], hstride:%d, size:%d\n",
+			if (NEXELL_DEBUG_SCALER)
+				qemu_log("[Scaling] dst - addr:%p, stride:[Y:%d, CB:%d], hstride:%d, size:%d\n",
 					(void*)dst_addr, dst_stride, dst_cbstride, dst_hstride, dst_size);
 #if 0
 			int i;
@@ -274,17 +286,20 @@ nexell_scaler_write(void *opaque, hwaddr addr,
 			cpu_physical_memory_read((int64_t)src_addr, src_buf, src_size);
 			cpu_physical_memory_write((int64_t)dst_addr, src_buf, src_size);
 #endif
-			qemu_log("[Scaling] copy done\n");
+			if (NEXELL_DEBUG_SCALER)
+				qemu_log("[Scaling] copy done\n");
 			if (s->regs.intreg &
 					(1 << (NEXELL_SCALER_INT_CMD_PROC + NEXELL_SCALER_INT_ENABLE))) {
 				s->regs.intreg |=
 					((1 << NEXELL_SCALER_INT_CMD_PROC) | (1 << NEXELL_SCALER_INT_DONE));
 				qemu_irq_raise(s->irq);
-				qemu_log("[Scaling] generate CMD_PROC and DONE interrupts\n");
+				if (NEXELL_DEBUG_SCALER)
+					qemu_log("[Scaling] generate CMD_PROC and DONE interrupts\n");
 			}
 			if (src_buf)
 				g_free(src_buf);
-			qemu_log("[Scaling] free buf\n");
+			if (NEXELL_DEBUG_SCALER)
+				qemu_log("[Scaling] free buf\n");
 		}
 		s->regs.cmdbufcon = val;
 	}
@@ -337,6 +352,7 @@ NexellScalerState *nexell_scaler_create(MemoryRegion *address_space, hwaddr base
 	memory_region_init_io(&s->mmio, NULL, &scaler_ops, s,
 				TYPE_NEXELL_SCALER, size);
 	memory_region_add_subregion(address_space, s->base_addr, &s->mmio);
-	qemu_log("[%s] hwaddr base:0x%4x\n", __func__, (int)s->base_addr);
+	if (NEXELL_DEBUG_SCALER)
+		qemu_log("[%s] hwaddr base:0x%4x\n", __func__, (int)s->base_addr);
 	return s;
 }
