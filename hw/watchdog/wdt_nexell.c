@@ -49,11 +49,6 @@ static bool nexell_wdt_is_enabled(const NexellWDTState *s)
 	return s->wdt_con & WDT_ENABLE;
 }
 
-static bool nexell_wdt_int_enabled(const NexellWDTState *s)
-{
-	return s->wdt_con & WDT_INT_ENABLE;
-}
-
 static void nexell_wdt_timer_expired(void *dev)
 {
 	NexellWDTState *s = NEXELL_WDT(dev);
