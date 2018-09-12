@@ -55,7 +55,7 @@ static const struct MemmapEntry {
     hwaddr size;
 } nexell_swallow_memmap[] = {
     [NEXELL_SWALLOW_DEBUG] =    {       0x0,      0x1000 },
-    [NEXELL_SWALLOW_MROM] =     {     0x1000,    0x10000 },
+    [NEXELL_SWALLOW_MROM] =     {     0x1000,    0x20000 },
     [NEXELL_SWALLOW_CLINT] =    {  0x2000000,    0x10000 },
     [NEXELL_SWALLOW_PLIC] =     {  0xc000000, 0x10000000 },
     [NEXELL_SWALLOW_VIP] =      { 0x20400000,    0x10000 },
@@ -72,15 +72,15 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_I2C9] =     { 0x20690000,    0x10000 },
     [NEXELL_SWALLOW_I2C10] =    { 0x206a0000,    0x10000 },
     [NEXELL_SWALLOW_I2C11] =    { 0x206b0000,    0x10000 },
-    [NEXELL_SWALLOW_UART0] =    { 0x20880000,    0x1000 },
+    [NEXELL_SWALLOW_UART0] =    { 0x20880000,     0x1000 },
     [NEXELL_SWALLOW_PWM0] =     { 0x208e0000,    0x10000 },
     [NEXELL_SWALLOW_PWM1] =     { 0x208f0000,    0x10000 },
     [NEXELL_SWALLOW_PWM2] =     { 0x20900000,    0x10000 },
     [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,    0x10000 },
     [NEXELL_SWALLOW_WDT] =      { 0x206D0000,    0x10000 },
     [NEXELL_SWALLOW_USB] =      { 0x20D00000,    0x10000 },
-    [NEXELL_SWALLOW_SRAM] =     { 0x40000000,    0x10000 },
-    [NEXELL_SWALLOW_DRAM] =     { 0x80000000,        0x0 },
+    [NEXELL_SWALLOW_SRAM] =     { 0x40000000,     0x8000 },
+    [NEXELL_SWALLOW_DRAM] =     { 0x80000000, 0x40000000 },
 };
 
 static uint64_t load_kernel(const char *kernel_filename)
