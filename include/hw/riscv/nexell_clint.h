@@ -48,7 +48,7 @@ enum {
 };
 
 enum {
-    NEXELL_CLINT_TIMEBASE_FREQ = 10000000
+    NEXELL_CLINT_TIMEBASE_FREQ = 1000000
 };
 
 #endif
