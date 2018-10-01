@@ -21,6 +21,7 @@
 
 #include "hw/gpio/nxp3220_gpio.h"
 #include "hw/i2c/nexell_i2c.h"
+#include "hw/timer/nexell_timer.h"
 #include "hw/watchdog/wdt_nexell.h"
 
 #define TYPE_NEXELL_SWALLOW_BOARD "riscv.nexell_swallow"
@@ -30,6 +31,7 @@
 enum SwallowConfiguration {
 	SWALLOW_NUM_GPIOS = 8,
 	SWALLOW_NUM_I2C = 12,
+	SWALLOW_NUM_TIMER = 2,
 };
 
 enum SwallowMemoryMap {
@@ -54,6 +56,7 @@ typedef struct {
     NexellPWMState pwm0;
     NexellPWMState pwm1;
     NexellPWMState pwm2;
+    NexellTIMERState timer[SWALLOW_NUM_TIMER];
     NEXELLI2CState i2c[SWALLOW_NUM_I2C];
     NexellWDTState wdt;
 
@@ -92,6 +95,8 @@ enum {
     NEXELL_SWALLOW_PWM0,
     NEXELL_SWALLOW_PWM1,
     NEXELL_SWALLOW_PWM2,
+    NEXELL_SWALLOW_TIMER0,
+    NEXELL_SWALLOW_TIMER1,
     NEXELL_SWALLOW_UART1,
     NEXELL_SWALLOW_UART2,
     NEXELL_SWALLOW_UART3,
@@ -132,6 +137,8 @@ enum {
     PWM0_IRQ_INT0 = 62,
     PWM1_IRQ_INT0 = 66,
     PWM2_IRQ_INT0 = 70,
+    TIMER0_IRQ_INT0 = 74,
+    TIMER1_IRQ_INT0 = 78,
     IRQ_NDEV = 128,
 };
 
