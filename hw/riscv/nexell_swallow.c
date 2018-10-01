@@ -76,6 +76,8 @@ static const struct MemmapEntry {
     [NEXELL_SWALLOW_PWM0] =     { 0x208e0000,    0x10000 },
     [NEXELL_SWALLOW_PWM1] =     { 0x208f0000,    0x10000 },
     [NEXELL_SWALLOW_PWM2] =     { 0x20900000,    0x10000 },
+    [NEXELL_SWALLOW_TIMER0] =   { 0x20910000,	 0x10000 },
+    [NEXELL_SWALLOW_TIMER1] =	{ 0x20920000,	 0x10000 },
     [NEXELL_SWALLOW_ADC0] =     { 0x206C0000,    0x10000 },
     [NEXELL_SWALLOW_WDT] =      { 0x206D0000,    0x10000 },
     [NEXELL_SWALLOW_USB] =      { 0x20D00000,    0x10000 },
@@ -456,6 +458,16 @@ static void nexell_swallow_board_init(MachineState *machine)
 			&error_abort);
 	memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_PWM2].base,
 			&s->pwm2.iomem);
+
+	/* TIMER */
+	for(i = 0; i < SWALLOW_NUM_TIMER; i++) {
+		object_initialize(&s->timer[i], sizeof(s->timer[i]), TYPE_NEXELL_TIMER);
+		s->timer[i].timer[1].irq = NEXELL_PLIC(s->plic)->irqs[TIMER0_IRQ_INT0 + i];
+		object_property_set_bool(OBJECT(&s->timer[i]), true, "realized",
+				&error_abort);
+		memory_region_add_subregion(system_memory, memmap[NEXELL_SWALLOW_TIMER0 + i].base,
+				&s->timer[i].iomem);
+	}
 
 	/* I2C */
 	for(i = 0; i < SWALLOW_NUM_I2C; i++) {
